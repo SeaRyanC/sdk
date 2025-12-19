@@ -319,10 +319,12 @@ function requiresLookahead(grid: Grid): boolean {
                 
                 if (contradiction) {
                   // This candidate leads to contradiction, eliminate it
-                  const otherCandidate = candidates.find(c => c !== candidate)!;
-                  const mainRowArr = workGrid[row];
-                  if (mainRowArr) mainRowArr[col] = otherCandidate;
-                  progress = true;
+                  const otherCandidate = candidates.find(c => c !== candidate);
+                  if (otherCandidate !== undefined) {
+                    const mainRowArr = workGrid[row];
+                    if (mainRowArr) mainRowArr[col] = otherCandidate;
+                    progress = true;
+                  }
                   break;
                 }
               }
@@ -373,18 +375,23 @@ export function generatePuzzle(difficulty: Difficulty): { puzzle: Grid; solution
     
     // Check difficulty constraints
     if (difficulty === 'easy') {
+      // Easy puzzles must be solvable with basic deduction
+      // and should have many obvious moves (high clue count ensures this)
       if (!canSolveWithBasicDeduction(puzzle)) {
         if (rowArr) rowArr[col] = backup ?? null;
         continue;
       }
     } else if (difficulty === 'medium') {
+      // Medium puzzles also use basic deduction but with fewer clues
+      // The lower targetClues (35 vs 45) makes them harder to spot
       if (!canSolveWithBasicDeduction(puzzle)) {
         if (rowArr) rowArr[col] = backup ?? null;
         continue;
       }
     } else if (difficulty === 'hard') {
-      // For hard, we allow puzzles that require lookahead
-      // but still want unique solution
+      // Hard puzzles can require depth-1 lookahead
+      // We only ensure unique solution (checked above)
+      // The requiresLookahead function validates this technique works
     }
     
     clues--;
