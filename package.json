@@ -1,0 +1,21 @@
+{
+  "name": "sudoku-webapp",
+  "version": "1.0.0",
+  "description": "A single-page Sudoku webapp for mobile and desktop",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "deploy": "npm run typecheck && npm run build"
+  },
+  "keywords": ["sudoku", "game", "preact"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "preact": "^10.28.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.2",
+    "typescript": "^5.9.3"
+  }
+}
