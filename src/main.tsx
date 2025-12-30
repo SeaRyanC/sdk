@@ -161,6 +161,58 @@ function App() {
     resetInactivityTimer();
   }, [selectedCell, fixedCells, current, resetInactivityTimer]);
 
+  // Handle keyboard input
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Handle number keys 1-9 and 0
+    if (e.key >= '0' && e.key <= '9') {
+      const num = parseInt(e.key, 10);
+      handleNumberInput(num === 0 ? 0 : num);
+      e.preventDefault();
+      return;
+    }
+
+    // Handle Delete and Backspace to clear cell
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      handleNumberInput(null);
+      e.preventDefault();
+      return;
+    }
+
+    // Handle arrow keys for navigation
+    if (selectedCell && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      const [row, col] = selectedCell;
+      let newRow = row;
+      let newCol = col;
+
+      switch (e.key) {
+        case 'ArrowUp':
+          newRow = row > 0 ? row - 1 : 8;
+          break;
+        case 'ArrowDown':
+          newRow = row < 8 ? row + 1 : 0;
+          break;
+        case 'ArrowLeft':
+          newCol = col > 0 ? col - 1 : 8;
+          break;
+        case 'ArrowRight':
+          newCol = col < 8 ? col + 1 : 0;
+          break;
+      }
+
+      setSelectedCell([newRow, newCol]);
+      resetInactivityTimer();
+      e.preventDefault();
+    }
+  }, [selectedCell, handleNumberInput, resetInactivityTimer]);
+
+  // Attach keyboard event listener
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
   const handleNewGame = useCallback((diff: Difficulty) => {
     if (hasUserEntries()) {
       if (confirm('Start a new game? Your current progress will be lost.')) {
