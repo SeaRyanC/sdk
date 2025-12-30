@@ -189,7 +189,7 @@ h1 {
 
 .numpad {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   width: 100%;
   max-width: 450px;
@@ -214,8 +214,23 @@ h1 {
 }
 
 .numpad .clear-btn {
-  grid-column: span 2;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
+}
+
+.numpad .hint-btn {
+  font-size: 1.5rem;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.numpad .hint-btn.visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.numpad .hint-btn:disabled {
+  cursor: default;
 }
 
 .congrats-overlay {

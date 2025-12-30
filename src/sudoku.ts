@@ -78,6 +78,33 @@ export function getCandidates(grid: Grid, row: number, col: number): number[] {
   return candidates;
 }
 
+// Find the easiest cell to fill (most constrained = fewest candidates)
+// Returns null if no easy cell exists (threshold: must have only 1 candidate)
+export function findEasiestCell(grid: Grid, fixedCells: boolean[][]): [number, number] | null {
+  let easiestCell: [number, number] | null = null;
+  let minCandidates = 10; // Start with value higher than max possible (9)
+  
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      // Skip fixed cells and cells that already have values
+      if (fixedCells[row]?.[col] || grid[row]?.[col] !== null) continue;
+      
+      const candidates = getCandidates(grid, row, col);
+      if (candidates.length > 0 && candidates.length < minCandidates) {
+        minCandidates = candidates.length;
+        easiestCell = [row, col];
+      }
+    }
+  }
+  
+  // Only return if there's a cell with exactly 1 candidate (truly "easy")
+  if (minCandidates === 1) {
+    return easiestCell;
+  }
+  
+  return null;
+}
+
 // Shuffle array in-place
 function shuffle<T>(array: T[]): T[] {
   for (let i = array.length - 1; i > 0; i--) {
