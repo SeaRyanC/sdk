@@ -166,7 +166,7 @@ function App() {
     // Handle number keys 1-9 and 0
     if (e.key >= '0' && e.key <= '9') {
       const num = parseInt(e.key, 10);
-      handleNumberInput(num === 0 ? 0 : num);
+      handleNumberInput(num);
       e.preventDefault();
       return;
     }
@@ -179,7 +179,22 @@ function App() {
     }
 
     // Handle arrow keys for navigation
-    if (selectedCell && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      // If no cell is selected, select the first empty cell
+      if (!selectedCell) {
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (!fixedCells[r]?.[c]) {
+              setSelectedCell([r, c]);
+              resetInactivityTimer();
+              e.preventDefault();
+              return;
+            }
+          }
+        }
+        return;
+      }
+
       const [row, col] = selectedCell;
       let newRow = row;
       let newCol = col;
@@ -203,7 +218,7 @@ function App() {
       resetInactivityTimer();
       e.preventDefault();
     }
-  }, [selectedCell, handleNumberInput, resetInactivityTimer]);
+  }, [selectedCell, fixedCells, handleNumberInput, resetInactivityTimer]);
 
   // Attach keyboard event listener
   useEffect(() => {
