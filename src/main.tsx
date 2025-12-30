@@ -1,10 +1,11 @@
 import { render } from 'preact';
-import { useState, useEffect, useCallback } from 'preact/hooks';
+import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 import { 
   generatePuzzle, 
   cloneGrid, 
   getViolations, 
   isSolved,
+  findEasiestCell,
   type Grid,
   type Difficulty
 } from './sudoku.js';
@@ -21,6 +22,9 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [showHint, setShowHint] = useState(false);
+  const [hasEasyCell, setHasEasyCell] = useState(false);
+  const inactivityTimerRef = useRef<number | null>(null);
 
   // Initialize game
   useEffect(() => {
@@ -66,6 +70,44 @@ function App() {
     }
   }, [current]);
 
+  // Check if an easy cell exists and update hasEasyCell state
+  useEffect(() => {
+    if (current.length > 0 && fixedCells.length > 0) {
+      const easyCell = findEasiestCell(current, fixedCells);
+      setHasEasyCell(easyCell !== null);
+    }
+  }, [current, fixedCells]);
+
+  // Reset inactivity timer on any user activity
+  const resetInactivityTimer = useCallback(() => {
+    setShowHint(false);
+    if (inactivityTimerRef.current !== null) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    inactivityTimerRef.current = window.setTimeout(() => {
+      setShowHint(true);
+    }, 20000); // 20 seconds
+  }, []);
+
+  // Set up inactivity timer on mount and cleanup
+  useEffect(() => {
+    resetInactivityTimer();
+    return () => {
+      if (inactivityTimerRef.current !== null) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+    };
+  }, [resetInactivityTimer]);
+
+  // Handle hint button click
+  const handleHint = useCallback(() => {
+    const easyCell = findEasiestCell(current, fixedCells);
+    if (easyCell) {
+      setSelectedCell(easyCell);
+    }
+    resetInactivityTimer();
+  }, [current, fixedCells, resetInactivityTimer]);
+
   const hasUserEntries = useCallback(() => {
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
@@ -101,7 +143,8 @@ function App() {
     if (!fixedCells[row]?.[col]) {
       setSelectedCell([row, col]);
     }
-  }, [fixedCells]);
+    resetInactivityTimer();
+  }, [fixedCells, resetInactivityTimer]);
 
   const handleNumberInput = useCallback((num: number | null) => {
     if (selectedCell) {
@@ -115,7 +158,8 @@ function App() {
         setCurrent(newCurrent);
       }
     }
-  }, [selectedCell, fixedCells, current]);
+    resetInactivityTimer();
+  }, [selectedCell, fixedCells, current, resetInactivityTimer]);
 
   const handleNewGame = useCallback((diff: Difficulty) => {
     if (hasUserEntries()) {
@@ -204,7 +248,15 @@ function App() {
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
           <button key={num} onClick={() => handleNumberInput(num)}>{num}</button>
         ))}
-        <button class="clear-btn" onClick={() => handleNumberInput(null)}>Clear</button>
+        <button class="clear-btn" onClick={() => handleNumberInput(null)}>✕</button>
+        <button key={0} onClick={() => handleNumberInput(0)}>0</button>
+        <button 
+          class={`hint-btn ${showHint && hasEasyCell ? 'visible' : ''}`} 
+          onClick={handleHint}
+          disabled={!showHint || !hasEasyCell}
+        >
+          ?
+        </button>
       </div>
 
       {showCongrats && (

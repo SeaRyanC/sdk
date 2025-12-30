@@ -17,6 +17,15 @@ async function build() {
 
   // Copy CSS
   fs.copyFileSync('src/styles.css', 'docs/styles.css');
+  
+  // Copy HTML
+  fs.copyFileSync('src/index.html', 'docs/index.html');
+  
+  // Copy manifest for PWA
+  fs.copyFileSync('src/manifest.json', 'docs/manifest.json');
+  
+  // Copy service worker
+  fs.copyFileSync('src/sw.js', 'docs/sw.js');
 
   console.log('Build complete! Output in /docs');
 }
